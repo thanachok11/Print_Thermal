@@ -1,0 +1,69 @@
+name: Build and Package ThermalPrintService
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # อนุญาตให้กดรันเองแบบ Manual ได้
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        include:
+          - target: win-x64
+            name: ThermalPrintService-win-x64
+          - target: win-x86
+            name: ThermalPrintService-win-x86
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore ThermalPrintService.csproj -r ${{ matrix.target }}
+
+      - name: Publish Standalone Executable
+        run: |
+          dotnet publish ThermalPrintService.csproj `
+            -c Release `
+            -r ${{ matrix.target }} `
+            --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            -o ./publish/${{ matrix.target }}
+
+      - name: Copy Configuration and Instructions
+        run: |
+          Copy-Item -Path "appsettings.json" -Destination "./publish/${{ matrix.target }}/"
+          Copy-Item -Path "README.md" -Destination "./publish/${{ matrix.target }}/"
+
+      - name: Create ZIP Package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "./publish/${{ matrix.target }}/*" -DestinationPath "./${{ matrix.name }}.zip"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ./${{ matrix.name }}.zip
+          retention-days: 30
+
+      - name: Create GitHub Release (If Tagged)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./${{ matrix.name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
