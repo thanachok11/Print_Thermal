@@ -50,39 +50,30 @@ namespace ThermalPrintService.Services
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
 
-                    using var fontVN = new Font("Tahoma", 13, FontStyle.Bold);
-                    using var fontHN = new Font("Tahoma", 10, FontStyle.Bold);
-                    using var fontNormal = new Font("Tahoma", 8.5f, FontStyle.Regular);
-                    using var fontSmall = new Font("Tahoma", 7.5f, FontStyle.Regular);
+                    using var fontTitle = new Font("Tahoma", 11, FontStyle.Bold);
+                    using var fontName = new Font("Tahoma", 11, FontStyle.Regular);
+                    using var fontDetails = new Font("Tahoma", 9, FontStyle.Regular);
                     using var brush = new SolidBrush(Color.Black);
+                    using var brushBlue = new SolidBrush(Color.FromArgb(0, 51, 153));
 
-                    float x = 8;
-                    float y = 8;
+                    float x = 10;
+                    float y = 10;
 
-                    // 1. หัวเรื่อง VN และ วันที่
-                    g.DrawString($"VN: {req.VN}", fontVN, brush, x, y);
-                    g.DrawString($"Date: {req.VisitDate ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm")}", fontSmall, brush, x + 160, y + 4);
+                    // รูปแบบ DX_VNOUTLABEL64:
+                    // 1. CloseVisitCodeName
+                    string closeVisitText = !string.IsNullOrEmpty(req.CloseVisitCodeName) ? req.CloseVisitCodeName : "ตรวจเสร็จสิ้น / Close Visit";
+                    g.DrawString(closeVisitText, fontTitle, brushBlue, x, y);
                     y += 24;
 
-                    // 2. ข้อมูลผู้ป่วย HN, ชื่อ-สกุล
-                    g.DrawString($"HN: {req.HN}", fontHN, brush, x, y);
-                    y += 18;
-                    g.DrawString($"ชื่อ: {req.PatientName}", fontHN, brush, x, y);
-                    y += 18;
+                    // 2. {@Name}
+                    string patName = !string.IsNullOrEmpty(req.PatientName) ? req.PatientName : $"HN: {req.HN}";
+                    g.DrawString(patName, fontName, brush, x, y);
+                    y += 22;
 
-                    // 3. สิทธิการรักษา และ แผนก/คลินิก
-                    if (!string.IsNullOrEmpty(req.RightName))
-                    {
-                        g.DrawString($"สิทธิ: {req.RightName}", fontNormal, brush, x, y);
-                        y += 16;
-                    }
-
-                    string clinicText = !string.IsNullOrEmpty(req.ClinicName) ? req.ClinicName : req.Clinic ?? "";
-                    if (!string.IsNullOrEmpty(clinicText))
-                    {
-                        g.DrawString($"คลินิก: {clinicText}", fontNormal, brush, x, y);
-                        y += 16;
-                    }
+                    // 3. VN: {VN}  VisitDate: {@VisitDate}
+                    string visitDateText = req.VisitDate ?? DateTime.Now.ToString("dd/MM/yyyy");
+                    g.DrawString($"VN: {req.VN}  VisitDate: {visitDateText}", fontDetails, brush, x, y);
+                    y += 20;
 
                     // 4. บาร์โค้ด VN (Code 128)
                     string barcodeData = !string.IsNullOrEmpty(req.VN) ? req.VN : (req.HN ?? "");

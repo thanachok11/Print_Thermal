@@ -83,6 +83,8 @@ namespace ThermalPrintService.Services
                     if (!string.IsNullOrEmpty(req.VN)) SafeSetParameter(rpt, "VN", req.VN);
                     if (!string.IsNullOrEmpty(req.HN)) SafeSetParameter(rpt, "HN", req.HN);
                     if (!string.IsNullOrEmpty(req.VisitDate)) SafeSetParameter(rpt, "VisitDate", req.VisitDate);
+                    if (!string.IsNullOrEmpty(req.PatientName)) SafeSetParameter(rpt, "Name", req.PatientName);
+                    if (!string.IsNullOrEmpty(req.CloseVisitCodeName)) SafeSetParameter(rpt, "CloseVisitCodeName", req.CloseVisitCodeName);
 
                     if (req.ExtraParams != null)
                     {

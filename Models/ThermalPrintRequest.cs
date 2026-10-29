@@ -14,8 +14,9 @@ namespace ThermalPrintService.Models
         public string? ClinicName { get; set; }
         public string? Doctor { get; set; }
         public string? DoctorName { get; set; }
+        public string? CloseVisitCodeName { get; set; }
         public string? RightName { get; set; }
-        public string? ReportFile { get; set; } = "VN_OUT_LABEL.rpt";
+        public string? ReportFile { get; set; } = "DX_VNOUTLABEL64.rpt";
         public int Copies { get; set; } = 1;
         public Dictionary<string, string>? ExtraParams { get; set; }
     }
